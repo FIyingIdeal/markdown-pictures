@@ -1,0 +1,22 @@
+@startuml
+(*) --> Filter 
+Filter --> WebSecurity
+note right: 构建 FilterChainProxy \n 基于代理模式将 原生Filter 与 Spring Security Filter（SecurityFilterChain） 关联
+WebSecurity -->[构建 FilterChainProxy 需要的 SecurityFilterChain ] HttpSecurity
+note right: 构建 SecurityFilterChain
+HttpSecurity -->[身份认证] AuthenticationManagerBuilder
+note top: 服务于身份认证相关 Filter
+AuthenticationManagerBuilder --> "AuthenticationManager SecurityConfigurer"
+"AuthenticationManager SecurityConfigurer" --> 默认
+默认 --> InitializeAuthenticationProviderBeanManagerConfigurer等
+"AuthenticationManager SecurityConfigurer" --> 定制化
+定制化 --> "重写WebSecurityConfiturerAdapter#configure(AuthenticationManagerBuilder)"
+
+
+HttpSecurity -->[构建 SecurityFilterChain] AbstractHttpConfigurer
+AbstractHttpConfigurer --> 默认AbstractHttpConfigurer
+默认AbstractHttpConfigurer --> WebSecurityConfigurerAdapter#getHttp()
+note bottom: 可通过参数控制是否需要默认配置，推荐使用，不然自己需要配置很多东西
+AbstractHttpConfigurer --> 定制化AbstractHttpConfigurer
+定制化AbstractHttpConfigurer --> "重写WebSecurityConfigurerAdapter#configure(HttpSecurity)"
+@enduml
